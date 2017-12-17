@@ -64,7 +64,7 @@ upload: build-vars
 	[ -f $(PKG_DIR)/*.deb ] && scp $(PKG_DIR)/*.deb $(PUBLISHER_USER)@$(PUBLISHER_HOST):$(PUBLISHER_SITE)/downloads/$(APP_NAME)/deb
 	[ -f $(PKG_DIR)/*.pkg ] && scp $(PKG_DIR)/*.pkg $(PUBLISHER_USER)@$(PUBLISHER_HOST):$(PUBLISHER_SITE)/downloads/$(APP_NAME)/osx
 
-make-release-repo: build-vars
+create-release-repo: build-vars
 	ssh $(PUBLISHER_USER)@$(PUBLISHER_HOST) install -d -o $(PUBLISHER_USER) -g $(PUBLISHER_USER) -m 0755 $(PUBLISHER_SITE)/downloads/$(APP_NAME)
 	ssh $(PUBLISHER_USER)@$(PUBLISHER_HOST) install -d -o $(PUBLISHER_USER) -g $(PUBLISHER_USER) -m 0755 $(PUBLISHER_SITE)/downloads/$(APP_NAME)/rpm
 	ssh $(PUBLISHER_USER)@$(PUBLISHER_HOST) install -d -o $(PUBLISHER_USER) -g $(PUBLISHER_USER) -m 0755 $(PUBLISHER_SITE)/downloads/$(APP_NAME)/deb

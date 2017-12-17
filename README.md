@@ -29,7 +29,7 @@ PKG=github.com/jmyounker/vers make release
 Create a new release directories:
 
 ```
-PKG=github.com/jmyounker/vers make-release-repo
+PKG=github.com/jmyounker/vers make create-release-repo
 ```
 
 Create new docker images:
