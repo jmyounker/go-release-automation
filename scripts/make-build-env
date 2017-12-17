@@ -1,0 +1,16 @@
+#!/bin/sh -x
+
+useradd -d /home/build -m build -s /bin/bash
+cat <<EOF > /home/build/.bashrc
+export PATH=/home/build/go/bin:/usr/local/go/bin:/usr/local/bin:\${PATH}
+# Handle go installation on Debian
+if [ -f /usr/lib/go-1.8/bin/go ]; then
+    export PATH=/usr/lib/go-1.8/bin:${PATH}
+    export GOROOT=/usr/lib/go-1.8
+fi
+export GOPATH=\$HOME/go
+EOF
+chown build /home/build/.bashrc
+chmod 0750 /home/build/.bashrc
+install -d -m 0755 -o build -g build /home/build/go
+

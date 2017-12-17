@@ -1,0 +1,45 @@
+{
+  "variables": {
+  },
+  "builders": [{
+    "type": "docker",
+    "image": "debian:stretch-20171210",
+    "commit": true,
+    "changes": [
+      "LABEL version=stretch-20171210"
+    ]
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "apt-get update",
+        "apt-get install -y ruby-full",
+        "apt-get install -y gcc",
+        "apt-get install -y make",
+        "gem install --no-ri --no-rdoc fpm",
+        "apt-get install -y golang-1.8",
+        "apt-get install -y git"
+      ]
+    },
+    {
+      "type": "file",
+      "source": "scripts/make-build-env",
+      "destination": "/tmp/make-build-env"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "chmod a+x /tmp/make-build-env",
+        "/tmp/make-build-env"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "docker-tag",
+      "repository": "theblobshop/be",
+      "tag": "debian-stretch-20171210"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "variables": {
+  },
+  "builders": [{
+    "type": "docker",
+    "image": "centos:centos7.4.1708",
+    "commit": true,
+    "changes": [
+      "LABEL version=7.4"
+    ]
+  }],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "yum install -y ruby-devel",
+        "yum install -y gcc",
+        "yum install -y make",
+        "yum install -y rpm-build",
+        "gem install --no-ri --no-rdoc fpm",
+        "yum install -y golang",
+        "yum install -y git"
+      ]
+    },
+    {
+        "type": "file",
+        "source": "scripts/make-build-env",
+        "destination": "/tmp/make-build-env"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "chmod a+x /tmp/make-build-env",
+        "/tmp/make-build-env"
+      ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "docker-tag",
+      "repository": "theblobshop/be",
+      "tag": "centos-7.4"
+    }
+  ]
+}
