@@ -41,10 +41,10 @@ build-package: build-vars
 	if [ ! -d $(PKG_DIR) ]; then mkdir $(PKG_DIR); fi
 
 package-rpm: build-vars build-package
-	docker run -it --rm --mount type=bind,source=$(PKG_DIR),target=/package $(DOCKER_RPM) su -l build -c 'go get $(PKG); cd $$GOPATH/src/$(PKG); make clean package-rpm; cp target/package/* /package'
+	docker run -it --rm --mount type=bind,source=$(PKG_DIR),target=/package $(DOCKER_RPM) su -l build -c 'go get $(PKG); cd $$GOPATH/src/$(PKG); make clean update package-rpm; cp target/package/* /package'
 
 package-deb: build-vars build-package
-	docker run -it --rm --mount type=bind,source=$(PKG_DIR),target=/package $(DOCKER_DEB) su -l build -c 'go get $(PKG); cd $$GOPATH/src/$(PKG); make clean package-deb; cp target/package/* /package'
+	docker run -it --rm --mount type=bind,source=$(PKG_DIR),target=/package $(DOCKER_DEB) su -l build -c 'go get $(PKG); cd $$GOPATH/src/$(PKG); make clean update package-deb; cp target/package/* /package'
 
 build-dir: build-vars
 	if [ ! -d $(BUILD_DIR) ]; then mkdir $(BUILD_DIR); fi
@@ -56,7 +56,7 @@ package-osx: build-go-dir
 	$(eval GOPATH := $(BUILD_DIR)/go)
 	echo $(GOPATH)
 	GOPATH=$(GOPATH) go get $(PKG)
-	cd $(GOPATH)/src/$(PKG); GOPATH=$(GOPATH) make clean package-osx
+	cd $(GOPATH)/src/$(PKG); GOPATH=$(GOPATH) make clean update package-osx
 	cp $(GOPATH)/src/$(PKG)/target/package/* $(PKG_DIR)
 
 upload: build-vars
