@@ -70,6 +70,6 @@ create-release-repo: build-vars
 	ssh $(PUBLISHER_USER)@$(PUBLISHER_HOST) install -d -o $(PUBLISHER_USER) -g $(PUBLISHER_USER) -m 0755 $(PUBLISHER_SITE)/downloads/$(APP_NAME)/deb
 	ssh $(PUBLISHER_USER)@$(PUBLISHER_HOST) install -d -o $(PUBLISHER_USER) -g $(PUBLISHER_USER) -m 0755 $(PUBLISHER_SITE)/downloads/$(APP_NAME)/osx
 
-release: package-rpm package-deb package-osx upload
+release: clean package-rpm package-deb package-osx upload
 
 
