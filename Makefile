@@ -41,10 +41,10 @@ build-package: build-vars
 	if [ ! -d $(PKG_DIR) ]; then mkdir $(PKG_DIR); fi
 
 package-rpm: build-vars build-package
-	docker run -it --rm --mount type=bind,source=$(PKG_DIR),target=/package $(DOCKER_RPM) su -l build -c 'go get $(PKG); cd $$GOPATH/src/$(PKG); make clean update package-rpm; cp target/package/* /package'
+	docker run -it --rm --mount type=bind,source=$(PKG_DIR),target=/package $(DOCKER_RPM) su -l build -c 'git clone https://${PKG}.git $$GOPATH/src/$(PKG); cd $$GOPATH/src/$(PKG); make clean update package-rpm; cp target/package/* /package'
 
 package-deb: build-vars build-package
-	docker run -it --rm --mount type=bind,source=$(PKG_DIR),target=/package $(DOCKER_DEB) su -l build -c 'go get $(PKG); cd $$GOPATH/src/$(PKG); make clean update package-deb; cp target/package/* /package'
+	docker run -it --rm --mount type=bind,source=$(PKG_DIR),target=/package $(DOCKER_DEB) su -l build -c 'git clone https://${PKG}.git $$GOPATH/src/$(PKG); cd $$GOPATH/src/$(PKG); make clean update package-deb; cp target/package/* /package'
 
 build-dir: build-vars
 	if [ ! -d $(BUILD_DIR) ]; then mkdir $(BUILD_DIR); fi
@@ -54,21 +54,32 @@ build-go-dir: build-vars build-dir
 
 package-osx: build-go-dir
 	$(eval GOPATH := $(BUILD_DIR)/go)
+	export GOPATH
 	echo $(GOPATH)
-	GOPATH=$(GOPATH) go get $(PKG)
+	git clone https://${PKG}.git ${GOPATH}/src/$(PKG)
 	cd $(GOPATH)/src/$(PKG); GOPATH=$(GOPATH) make clean update package-osx
 	cp $(GOPATH)/src/$(PKG)/target/package/* $(PKG_DIR)
 
 upload: build-vars
-	[ -f $(PKG_DIR)/*.rpm ] && scp $(PKG_DIR)/*.rpm $(PUBLISHER_USER)@$(PUBLISHER_HOST):$(PUBLISHER_SITE)/downloads/$(APP_NAME)/rpm
-	[ -f $(PKG_DIR)/*.deb ] && scp $(PKG_DIR)/*.deb $(PUBLISHER_USER)@$(PUBLISHER_HOST):$(PUBLISHER_SITE)/downloads/$(APP_NAME)/deb
-	[ -f $(PKG_DIR)/*.pkg ] && scp $(PKG_DIR)/*.pkg $(PUBLISHER_USER)@$(PUBLISHER_HOST):$(PUBLISHER_SITE)/downloads/$(APP_NAME)/osx
+	[ -f $(PKG_DIR)/*.rpm ] && scp $(PKG_DIR)/*.rpm $(PUBLISHER_USER)@$(PUBLISHER_HOST):$(PUBLISHER_SITE)/downloads/$(APP_NAME)/rpm || true
+	[ -f $(PKG_DIR)/*.deb ] && scp $(PKG_DIR)/*.deb $(PUBLISHER_USER)@$(PUBLISHER_HOST):$(PUBLISHER_SITE)/downloads/$(APP_NAME)/deb || true
+	[ -f $(PKG_DIR)/*.pkg ] && scp $(PKG_DIR)/*.pkg $(PUBLISHER_USER)@$(PUBLISHER_HOST):$(PUBLISHER_SITE)/downloads/$(APP_NAME)/osx || true
 
 create-release-repo: build-vars
 	ssh $(PUBLISHER_USER)@$(PUBLISHER_HOST) install -d -o $(PUBLISHER_USER) -g $(PUBLISHER_USER) -m 0755 $(PUBLISHER_SITE)/downloads/$(APP_NAME)
 	ssh $(PUBLISHER_USER)@$(PUBLISHER_HOST) install -d -o $(PUBLISHER_USER) -g $(PUBLISHER_USER) -m 0755 $(PUBLISHER_SITE)/downloads/$(APP_NAME)/rpm
 	ssh $(PUBLISHER_USER)@$(PUBLISHER_HOST) install -d -o $(PUBLISHER_USER) -g $(PUBLISHER_USER) -m 0755 $(PUBLISHER_SITE)/downloads/$(APP_NAME)/deb
 	ssh $(PUBLISHER_USER)@$(PUBLISHER_HOST) install -d -o $(PUBLISHER_USER) -g $(PUBLISHER_USER) -m 0755 $(PUBLISHER_SITE)/downloads/$(APP_NAME)/osx
+
+create-simple-go-package-dir: require-pkg
+	install -d $(GOPATH)/src/$(PKG)
+
+create-simple-go-makefile: require-pkg build-vars create-simple-go-package-dir
+	echo '{"pkg": "$(APP_NAME)", "cmd": "$(APP_NAME)"}' | jx -t skel/go/Makefile.tmpl -o $(GOPATH)/src/$(PKG)/Makefile
+
+create-simple-go-project: require-pkg create-simple-go-package-dir create-simple-go-makefile
+	cp skel/go/.travis.yml $(GOPATH)/src/$(PKG)
+	cp skel/go/version.json $(GOPATH)/src/$(PKG)
 
 release: clean package-rpm package-deb package-osx upload
 
