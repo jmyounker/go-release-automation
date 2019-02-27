@@ -26,7 +26,7 @@ For example:
 PKG=github.com/jmyounker/vers make release
 ```
 
-Create a new release directories:
+Create a new release directory:
 
 ```
 PKG=github.com/jmyounker/vers make create-release-repo
